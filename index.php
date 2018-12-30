@@ -4,7 +4,6 @@ $totalCount = $_POST['totalDataCount'];
 
 $title = [];
 foreach ($data as $key => $value) {
-	// var_dump($value['urlData']);
 	array_push($title, get_title($value['urlData'],'title'));
 }
 
