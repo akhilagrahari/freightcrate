@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>FreightCrate</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script> 
+</head>
+<body>
+
+<div class="container"  ng-app="myApp" ng-controller="myCtrl">
+  <h2>Form</h2>
+  <form class="col-md-6">
+    <div class="form-group col-md-12" ng-repeat="url in urls" >
+    	<div class="col-md-8" > 
+    		<input type="text" class="form-control" ng-model="url.urlData" placeholder="{{url.placeholder}}" name="url">  
+    		<span style="color:red;" ng-show="!url.isUrlValid">Please enter valid url</span>  		
+    	</div>         
+    	<div class="form-group col-md-4" >
+		  	<button class="btn btn-primary" ng-show="$last" ng-click="addUrl()">Add</button> 
+		</div> 
+    </div>	 
+    <div class="col-md-12">
+      	<button type="submit" class="btn btn-info" ng-click="getUrlTitle()">Submit</button>  
+   	</div>  
+   	<div class="col-md-12">
+      	<span style="color:green;" ng-show="isSuccess">{{successMessage}}</span> 
+   	</div>
+   	<div class="col-md-12" ng-if="isSuccess" ng-repeat="title in titles">
+      	<span  ng-show="isSuccess">URL {{$index+1}}-> {{title}}</span>  
+   	</div>   
+  </form>
+</div>
+
+</body>
+<script>
+var app = angular.module('myApp', []);
+app.controller('myCtrl', function($scope,$http) {
+
+    $scope.urls = [{id: 1,urlData:'',placeholder:"Enter URL 1",isUrlValid:true}];
+    $scope.addUrl = function(){
+    	var urlLength = $scope.urls.length+1;
+    	$scope.urls.push({id:urlLength,urlData:'',placeholder:"Enter URL "+urlLength,isUrlValid:true});
+    }
+
+	$scope.validateUrl = function(urlData){
+    	var res = urlData.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+	    if(res == null)
+	        return false;
+	    else
+	        return true;
+    }
+    $scope.successMessage = '';
+    $scope.isSuccess = false;
+    $scope.titles = [];
+    $scope.getUrlTitle = function(){
+    	var totalDataCount = $scope.urls.length;
+    	var validData = [];
+    	angular.forEach($scope.urls, function(value, key){
+		      value.isUrlValid = $scope.validateUrl(value.urlData);
+		      if(value.isUrlValid){
+				validData.push(value);
+		      }
+		   });
+
+	     $.ajax({
+            type:'POST',
+            url:'index.php',
+            dataType: "json",
+            data:{data:validData, totalDataCount:totalDataCount},
+            success:function(data){
+                if(!data.error){
+                	$scope.titles = data.data;
+                	$scope.successMessage = data.message;
+                	$scope.isSuccess = true;
+                }
+            }
+        });
+    }
+
+});
+</script>
+</html>
