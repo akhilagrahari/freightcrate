@@ -7,8 +7,15 @@ foreach ($data as $key => $value) {
 	array_push($title, get_title($value['urlData'],'title'));
 }
 
+function addhttp($url) {
+    if (!preg_match("~^(?:f|ht)tps?://~i", $url)) {
+        $url = "http://" . $url;
+    }
+    return $url;
+}
+
 function get_title($url, $tagname){
-  $fileContent = file_get_contents($url);
+  $fileContent = file_get_contents(addhttp($url));
   if(strlen($fileContent)>0){
     $fileContent = trim(preg_replace('/s+/', ' ', $fileContent)); 
     preg_match("/\<{$tagname}\>(.*)\<\/{$tagname}\>/",$fileContent,$title); 
