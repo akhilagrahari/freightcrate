@@ -16,7 +16,7 @@
   <form class="col-md-6">
     <div class="form-group col-md-12" ng-repeat="url in urls" >
     	<div class="col-md-8" > 
-    		<input type="text" class="form-control" ng-model="url.urlData" ng-change = "checkValidUrl(url)" placeholder="{{url.placeholder}}" name="url">  
+    		<input type="text" class="form-control" ng-change = "checkValidUrl(url)" ng-blur = "getUrlTitle()" ng-model="url.urlData" placeholder="{{url.placeholder}}" name="url">  
     		<span style="color:red;" ng-show="!url.isUrlValid">Please enter valid url</span>  		
     	</div>         
     	<div class="form-group col-md-4" >
@@ -24,7 +24,7 @@
 		</div> 
     </div>	 
     <div class="col-md-12">
-      	<button type="submit" class="btn btn-info" ng-click="getUrlTitle()">Submit</button>  
+      	<button type="submit" class="btn btn-info" ng-click="getUrlTitle()">{{fetchStatus}}</button>  
    	</div>  
    	<div class="col-md-12">
       	<span style="color:green;" ng-show="isSuccess">{{successMessage}}</span> 
@@ -45,20 +45,24 @@ app.controller('myCtrl', function($scope,$http) {
     	var urlLength = $scope.urls.length+1;
     	$scope.urls.push({id:urlLength,urlData:'',placeholder:"Enter URL "+urlLength,isUrlValid:true});
     }
-   $scope.checkValidUrl = function(url){
-      url.isUrlValid = $scope.validateUrl(url.urlData);
-   }
-   $scope.validateUrl = function(urlData){
-     var res = urlData.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-	 if(res == null)
-	      return false;
-	 else
-	     return true;
+
+  $scope.checkValidUrl = function(url){
+    url.isUrlValid = $scope.validateUrl(url.urlData);
+  }
+
+	$scope.validateUrl = function(urlData){
+    	var res = urlData.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+	    if(res == null)
+	        return false;
+	    else
+	        return true;
     }
+    $scope.fetchStatus = "Fetch";
     $scope.successMessage = '';
     $scope.isSuccess = false;
     $scope.titles = [];
     $scope.getUrlTitle = function(){
+      $scope.fetchStatus = "Fetching";
     	var totalDataCount = $scope.urls.length;
     	var validData = [];
     	angular.forEach($scope.urls, function(value, key){
@@ -68,20 +72,26 @@ app.controller('myCtrl', function($scope,$http) {
 		      }
 		   });
 
-	     $.ajax({
+	     if(validData.length>0){
+        $.ajax({
             type:'POST',
             url:'index.php',
             dataType: "json",
             data:{data:validData, totalDataCount:totalDataCount},
             success:function(data){
                 if(!data.error){
-                	$scope.titles = data.data;
-                	$scope.successMessage = data.message;
-                	$scope.isSuccess = true;
-			$scope.$apply();
+                  $scope.titles = data.data;
+                  $scope.successMessage = data.message;
+                  $scope.isSuccess = true;
+                  $scope.fetchStatus = "Fetched";
+                  $scope.$apply();
                 }
             }
         });
+       }
+       else{
+        $scope.fetchStatus = "Fetching Error";
+       }
     }
 
 });
