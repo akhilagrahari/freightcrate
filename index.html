@@ -16,7 +16,7 @@
   <form class="col-md-6">
     <div class="form-group col-md-12" ng-repeat="url in urls" >
     	<div class="col-md-8" > 
-    		<input type="text" class="form-control" ng-model="url.urlData" placeholder="{{url.placeholder}}" name="url">  
+    		<input type="text" class="form-control" ng-model="url.urlData" ng-change = "removeMessage(url)" placeholder="{{url.placeholder}}" name="url">  
     		<span style="color:red;" ng-show="!url.isUrlValid">Please enter valid url</span>  		
     	</div>         
     	<div class="form-group col-md-4" >
@@ -45,13 +45,15 @@ app.controller('myCtrl', function($scope,$http) {
     	var urlLength = $scope.urls.length+1;
     	$scope.urls.push({id:urlLength,urlData:'',placeholder:"Enter URL "+urlLength,isUrlValid:true});
     }
-
-	$scope.validateUrl = function(urlData){
-    	var res = urlData.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
-	    if(res == null)
-	        return false;
-	    else
-	        return true;
+   $scope.removeMessage = function(url){
+      url.isUrlValid = true;
+   }
+   $scope.validateUrl = function(urlData){
+     var res = urlData.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g);
+	 if(res == null)
+	      return false;
+	 else
+	     return true;
     }
     $scope.successMessage = '';
     $scope.isSuccess = false;
@@ -76,6 +78,7 @@ app.controller('myCtrl', function($scope,$http) {
                 	$scope.titles = data.data;
                 	$scope.successMessage = data.message;
                 	$scope.isSuccess = true;
+			$scope.$apply();
                 }
             }
         });
